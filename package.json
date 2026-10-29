@@ -1,0 +1,28 @@
+{
+  "name": "spps",
+  "version": "1.0.0",
+  "description": "SPPS — Study Plan Preparation System for Indian Competitive & Entrance Examinations",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "seed": "node server/seedData.js",
+    "test": "node tests/test_inmemory.js",
+    "dev": "node --watch server/server.js"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "keywords": [
+    "spps",
+    "study-planner",
+    "timetable-generator",
+    "competitive-exams-india",
+    "pyq",
+    "jee",
+    "neet",
+    "upsc",
+    "ssc"
+  ],
+  "author": "SPPS Team",
+  "license": "MIT"
+}
