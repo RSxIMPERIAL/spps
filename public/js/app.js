@@ -46,6 +46,13 @@ class AppRouter {
       return;
     }
 
+    // Role Guard: Admin Console strictly restricted to admin role
+    if (route === 'admin' && (!user || user.role !== 'admin')) {
+      if (window.toast) window.toast.error('Access restricted: Administrator privileges required.');
+      this.navigate(user ? 'dashboard' : 'landing');
+      return;
+    }
+
     // Default route for authenticated users navigating to landing
     if (route === 'landing' && user) {
       this.navigate('dashboard');

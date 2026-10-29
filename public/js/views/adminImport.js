@@ -9,6 +9,12 @@ const adminImport = {
   topicsCache: [],
 
   async openModal(defaultExamId = 'jee-main') {
+    const user = window.state.get('user');
+    if (!user || user.role !== 'admin') {
+      toast.error('Access restricted: Only verified administrators can import question papers.');
+      return;
+    }
+
     this.currentExamId = defaultExamId;
 
     // Fetch exams list
@@ -294,6 +300,12 @@ const adminImport = {
 
   async handleSubmit(e) {
     e.preventDefault();
+    const user = window.state.get('user');
+    if (!user || user.role !== 'admin') {
+      toast.error('Access restricted: Only verified administrators can import questions.');
+      return;
+    }
+
     const examId = document.getElementById('import-exam-id').value;
     const defaultYear = document.getElementById('import-year').value;
     const defaultSubjectId = document.getElementById('import-subject-id').value || null;

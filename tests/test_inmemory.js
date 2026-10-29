@@ -324,6 +324,20 @@ async function runAllTests() {
     const studentAdminAttempt = await invokeHandler('GET', '/api/admin/stats', studentHeaders);
     assert(studentAdminAttempt.status === 403, 'Normal student accessing /api/admin/stats is rejected with 403 Forbidden');
 
+    // 3b. Security verification: Unauthenticated requests to push questions or PDFs are rejected with 401
+    const unauthUploadAttempt = await invokeHandler('POST', '/api/admin/pyqs', { 'content-type': 'application/json' }, { question_text: 'Hacked question' });
+    assert(unauthUploadAttempt.status === 401, 'Unauthenticated question upload rejected with 401 Unauthorized');
+
+    const unauthPdfAttempt = await invokeHandler('POST', '/api/admin/pyq-pdfs', { 'content-type': 'application/json' }, { title: 'Hacked PDF' });
+    assert(unauthPdfAttempt.status === 401, 'Unauthenticated PDF paper upload rejected with 401 Unauthorized');
+
+    // 3c. Security verification: Normal student attempting database push is rejected with 403 Forbidden
+    const studentUploadAttempt = await invokeHandler('POST', '/api/admin/pyqs', { ...studentHeaders, 'content-type': 'application/json' }, { question_text: 'Unauthorized question' });
+    assert(studentUploadAttempt.status === 403, 'Normal student attempting question upload rejected with 403 Forbidden');
+
+    const studentPdfAttempt = await invokeHandler('POST', '/api/admin/pyq-pdfs', { ...studentHeaders, 'content-type': 'application/json' }, { title: 'Unauthorized PDF' });
+    assert(studentPdfAttempt.status === 403, 'Normal student attempting PDF upload rejected with 403 Forbidden');
+
     // 4. Admin Login & Access
     const adminLogin = await invokeHandler('POST', '/api/auth/admin-demo');
     assert(adminLogin.status === 200, 'Admin login endpoint returns 200');

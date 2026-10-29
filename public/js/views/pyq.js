@@ -100,6 +100,8 @@ const pyqView = {
 
     const exam = this.currentExamDetails?.exam || {};
     const summary = this.summaryCache || {};
+    const user = window.state.get('user');
+    const isAdmin = user && user.role === 'admin';
 
     container.innerHTML = `
       <div style="display: flex; flex-direction: column; gap: 1.5rem; max-width: 1300px; margin: 0 auto;">
@@ -132,11 +134,13 @@ const pyqView = {
                 ${window.icons.download || '⎙'} Print Study Sheet
               </button>
 
-              <button class="btn btn-secondary btn-sm" 
-                      style="background: rgba(255,255,255,0.15); color: #ffffff; border-color: rgba(255,255,255,0.25);" 
-                      onclick="adminImport.openModal('${activeExamId}')">
-                ${window.icons.upload || '↑'} Upload PYQs (CSV/JSON)
-              </button>
+              ${isAdmin ? `
+                <button class="btn btn-secondary btn-sm" 
+                        style="background: rgba(255,255,255,0.15); color: #ffffff; border-color: rgba(255,255,255,0.25);" 
+                        onclick="adminImport.openModal('${activeExamId}')">
+                  ${window.icons.upload || '↑'} Upload PYQs (Admin)
+                </button>
+              ` : ''}
             </div>
           </div>
 
@@ -242,17 +246,26 @@ const pyqView = {
     const years = summary.years || [];
     const exam = this.currentExamDetails?.exam || {};
 
+    const user = window.state.get('user');
+    const isAdmin = user && user.role === 'admin';
+
     if (!years.length) {
       return `
         <div class="spps-card" style="padding: 3rem; text-align: center;">
           <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">📅</div>
-          <h3 style="font-size: 1.25rem; font-weight: 800; color: #0f172a;">No Year Papers Uploaded Yet</h3>
+          <h3 style="font-size: 1.25rem; font-weight: 800; color: #0f172a;">No Year Papers Recorded Yet</h3>
           <p style="font-size: 0.875rem; color: #64748b; max-width: 500px; margin: 0.5rem auto 1.5rem;">
-            There are currently no year-specific question papers recorded for ${exam.name}. Admin/teachers can upload papers via the bulk import tool.
+            Official year-wise question papers for ${exam.name} are being compiled.
           </p>
-          <button class="btn btn-primary" onclick="adminImport.openModal('${exam.id}')">
-            Upload ${exam.short_name} Questions Now
-          </button>
+          ${isAdmin ? `
+            <button class="btn btn-primary" onclick="adminImport.openModal('${exam.id}')">
+              Upload ${exam.short_name} Questions (Admin)
+            </button>
+          ` : `
+            <button class="btn btn-secondary" onclick="pyqView.switchTab('topic-wise')">
+              Explore Topic-Wise Practice
+            </button>
+          `}
         </div>
       `;
     }
@@ -920,11 +933,7 @@ const pyqView = {
                 <button class="btn btn-primary btn-sm" onclick="pyqView.openUploadModal()" style="display: inline-flex; align-items: center; gap: 6px;">
                   <span>📄</span> Upload Official PDF Paper (Admin)
                 </button>
-              ` : `
-                <button class="btn btn-secondary btn-sm" onclick="pyqView.openUploadModal()" style="display: inline-flex; align-items: center; gap: 6px;" title="Upload PDF question paper">
-                  <span>📄</span> Upload PDF Paper
-                </button>
-              `}
+              ` : ''}
               <button class="btn btn-secondary btn-sm" onclick="pyqView.resetPdfFilters()">
                 ↻ Reset Filters
               </button>
@@ -974,7 +983,7 @@ const pyqView = {
             </p>
             <div style="display: flex; gap: 0.75rem; justify-content: center;">
               <button class="btn btn-secondary btn-sm" onclick="pyqView.resetPdfFilters()">Clear All Filters</button>
-              <button class="btn btn-primary btn-sm" onclick="pyqView.openUploadModal()">+ Upload PDF for this Exam</button>
+              ${isAdmin ? `<button class="btn btn-primary btn-sm" onclick="pyqView.openUploadModal()">+ Upload PDF for this Exam (Admin)</button>` : ''}
             </div>
           </div>
         ` : `
@@ -1104,6 +1113,12 @@ const pyqView = {
   },
 
   openUploadModal() {
+    const user = window.state.get('user');
+    if (!user || user.role !== 'admin') {
+      toast.error('Access restricted: Only verified administrators can upload examination documents.');
+      return;
+    }
+
     const existing = document.getElementById('pdf-upload-modal');
     if (existing) existing.remove();
 
@@ -1205,6 +1220,12 @@ const pyqView = {
 
   async handlePdfUploadSubmit(event) {
     event.preventDefault();
+    const user = window.state.get('user');
+    if (!user || user.role !== 'admin') {
+      toast.error('Access restricted: Only verified administrators can upload examination documents.');
+      return;
+    }
+
     const form = event.target;
     const submitBtn = document.getElementById('pdf-upload-submit-btn');
     const statusDiv = document.getElementById('pdf-upload-status');
@@ -1268,6 +1289,12 @@ const pyqView = {
   },
 
   async deletePdf(id) {
+    const user = window.state.get('user');
+    if (!user || user.role !== 'admin') {
+      toast.error('Access restricted: Only verified administrators can delete examination documents.');
+      return;
+    }
+
     if (!confirm('Are you sure you want to permanently delete this PDF paper?')) return;
     try {
       await window.api.adminDeletePyqPdf(id);

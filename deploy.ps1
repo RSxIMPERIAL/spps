@@ -29,3 +29,4 @@ Write-Host "1. Visit https://vercel.com/new" -ForegroundColor White
 Write-Host "2. Click 'Import' next to your GitHub repository" -ForegroundColor White
 Write-Host "3. Click 'Deploy' (vercel.json and serverless bridge are already configured!)" -ForegroundColor Green
 Write-Host "Your live link (e.g. https://spps-xxx.vercel.app) will be active in seconds!`n" -ForegroundColor Yellow
+
